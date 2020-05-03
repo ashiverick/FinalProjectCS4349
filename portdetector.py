@@ -15,21 +15,59 @@ except (IOError, KeyError):
     sys.exit(-1)
 
 inc = 0
+ts1 = 0
+ts2 = 0
+firsttimestamp = 0
+lowestport = 1000000
+highestport = 0
+
+print("##########################################################\n")
+print("#1 Scan\n")
 
 for ts, buf in pcap:
-
-    eth = dpkt.ethernet.Ethernet(buf)
+    if inc == 0:
+        firsttimestamp = ts
+        print("First time stamp: ", firsttimestamp)
+    try:
+        eth = dpkt.ethernet.Ethernet(buf)
+    except (dpkt.dpkt.Unpack.Error, IndexError):
+        continue
 
     ip = eth.data
-    print("IP Data: ", ip, '\n')
+    if not ip:
+        continue
+    #print("IP Data: ", ip, '\n')
+    
     tcp = ip.data
-    print("TCP Data: ", tcp, '\n')
+    if type(tcp) != dpkt.tcp.TCP:
+        continue
+    #print("TCP Data: ", tcp, '\n')
+
     tcpsport = tcp.sport
     tcpdport = tcp.dport
 
-    print("Source Port: ", tcpsport, " Destination Port: ", tcpdport, " At Timestamp: ", datetime.fromtimestamp(ts), '\n')
-    inc = inc + 1
-    print(ts, len(buf))
+    if tcpsport > highestport:
+        highestport = tcpsport
+    if tcpsport < lowestport:
+        lowestport = tcpsport
+    if tcpdport > highestport:
+        highestport = tcpdport
+    if tcpdport < lowestport:
+        lowestport = tcpdport
+
+    ts1 = ts
+    
+    print("Source Port: ", tcpsport, " Destination Port: ", tcpdport, " At Timestamp: ", datetime.fromtimestamp(ts), " For Duration: ", ts1-ts2, '\n')
+    
+    inc += 1
+    ts2 = ts1
+    print('\n')
+    print("##########################################################\n")
+    print("#", inc, " Scan\n")
+    #print(ts, len(buf))
+
+print('\n')
+print("##########################################################\n")
 print('\n')
 print("Ethernet: ",  eth, '\n')
 
@@ -41,12 +79,13 @@ ip = eth.data
 tcp = ip.data
 tcpsport = tcp.sport
 tcpdport = tcp.dport
-
-datetime = datetime.fromtimestamp(ts)
+datetime1 = datetime.fromtimestamp(firsttimestamp)
+datetime2 = datetime.fromtimestamp(ts)
 
 print("IP: ", ip, " TCP: ", tcp, " TCP SPort: ", tcpsport, " TCP DPort: ", tcpdport, '\n')
-print("The ports span: ", tcpsport, " to ", tcpdport, '\n')
-print("There are ", tcpsport-tcpdport, " ports total. \n")
-print("The scans were taken at ", ts, '\n')
-print("The scans were taken at datetime: ", datetime, '\n')
+print("The ports span: ", lowestport, " to ", highestport, '\n')
+print("There were ", inc, " scans taken \n")
+print("The scans were taken between ", firsttimestamp, "and", ts, '\n')
+print("The scans took ", ts - firsttimestamp, "seconds, or ", (ts-firsttimestamp)/60, " minutes \n")
+print("The scans were taken between: ", datetime1, "and", datetime2, '\n')
 
