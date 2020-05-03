@@ -6,7 +6,6 @@ import dpkt
 import sys 
 from datetime import datetime
 
-
 try:
     file = open('test-2.pcap', 'rb')            #change "test-2.pcap" to the pcap file you want to test with, include location of the file if it is not in this folder
     pcap = dpkt.pcap.Reader(file)
@@ -25,7 +24,6 @@ scanduration = 0
 totaltime = 0
 avtime = 0
 
-
 for ts, buf in pcap:
     print("##########################################################\n")
     print("#", inc+1, " Scan\n")
@@ -33,12 +31,8 @@ for ts, buf in pcap:
     if inc == 0:
         firsttimestamp = ts
         ts2 = ts
-        #print("First time stamp: ", firsttimestamp)
     
     eth = dpkt.ethernet.Ethernet(buf)
-    # except (dpkt.dpkt.Unpack.Error, IndexError):
-    #     print("*******************************************************Is this code totally useless?")
-    #     continue
 
     ip = eth.data
     if not ip:
@@ -75,8 +69,6 @@ for ts, buf in pcap:
 print('\n')
 print("##########################################################\n")
 print('\n')
-#print("Ethernet: ",  eth, '\n')
-
 
 ip = eth.data
 tcp = ip.data
@@ -86,11 +78,9 @@ datetime1 = datetime.fromtimestamp(firsttimestamp)
 datetime2 = datetime.fromtimestamp(ts)
 avtime = totaltime/inc
 
-#print("IP: ", ip, " TCP: ", tcp, " TCP SPort: ", tcpsport, " TCP DPort: ", tcpdport, '\n')
 print("The ports span: ", lowestport, " to ", highestport, '\n')
 print("There were ", inc, " scans taken \n")
 print("The scans were taken between ", firsttimestamp, "and", ts, '\n')
 print("The scans took ", ts - firsttimestamp, "seconds, or ", (ts-firsttimestamp)/60, " minutes \n")
 print("The scans were taken between: ", datetime1, "and", datetime2, '\n')
 print("Average time during scans: ", avtime, "seconds \n")
-
